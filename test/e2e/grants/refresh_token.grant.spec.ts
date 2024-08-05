@@ -133,8 +133,7 @@ describe("refresh_token grant", () => {
     const accessTokenTTL = new DateInterval("1h");
 
     // act
-    const tokenResponse = grant.respondToAccessTokenRequest(request, accessTokenTTL);
-
+    const tokenResponse =  grant.respondToAccessTokenRequest(request, accessTokenTTL);
     // assert
     await expect(tokenResponse).rejects.toThrowError(/Cannot verify the refresh token/);
   });

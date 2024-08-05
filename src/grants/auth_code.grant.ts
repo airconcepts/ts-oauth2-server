@@ -237,9 +237,9 @@ export class AuthCodeGrant extends AbstractAuthorizedGrant {
       audience: authorizationRequest.audience,
     };
 
-    const jsonPayload = JSON.stringify(payload);
+    // const jsonPayload = JSON.stringify(payload);
 
-    const code = await this.encrypt(jsonPayload);
+    const code = await this.encrypt(payload);
 
     const params: Record<string, string> = { code };
 

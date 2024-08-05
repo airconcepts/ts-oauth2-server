@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { decode } from "jsonwebtoken";
+import * as jose from "jose";
 
 import { inMemoryDatabase } from "../_helpers/in_memory/database.js";
 import {
@@ -181,7 +181,7 @@ describe("implicit grant", () => {
       // act
       const response = await grant.completeAuthorizationRequest(authorizationRequest);
       const authorizeResponseQuery = new URLSearchParams(response.headers.location.split("?")[1]);
-      const decodedCode = <ITokenData>decode(String(authorizeResponseQuery.get("access_token")));
+      const decodedCode = <ITokenData>jose.decodeJwt(String(authorizeResponseQuery.get("access_token")));
 
       // assert
       expect(authorizeResponseQuery.get("state")).toBe("abc123-state");

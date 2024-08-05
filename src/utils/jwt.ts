@@ -1,4 +1,4 @@
-import jwt, { Secret, SignOptions, VerifyOptions } from "jsonwebtoken";
+import * as jose from 'jose';
 import { OAuthClient } from "../entities/client.entity.js";
 import { OAuthUser } from "../entities/user.entity.js";
 
@@ -8,43 +8,43 @@ export type ExtraAccessTokenFieldArgs = {
   client: OAuthClient;
 };
 export interface JwtInterface {
-  verify(token: string, options?: VerifyOptions): Promise<Record<string, unknown>>;
-  decode(encryptedData: string): null | Record<string, any> | string;
-  sign(payload: string | Buffer | Record<string, unknown>, options?: SignOptions): Promise<string>;
+  verify(token: string): Promise<Record<string, unknown>>;
+  decode(encryptedData: string): Promise<Record<string, unknown> | null>;
+  sign(payload: Record<string, unknown>): Promise<string>;
   extraTokenFields?(params: ExtraAccessTokenFieldArgs): ExtraAccessTokenFields | Promise<ExtraAccessTokenFields>;
 }
 
 export class JwtService implements JwtInterface {
-  constructor(private readonly secretOrPrivateKey: Secret) {}
+  private readonly encoder;
+
+  constructor(private readonly secretOrPrivateKey: string) {
+    this.encoder = new TextEncoder();
+  }
 
   /**
    * Asynchronously verify given token using a secret or a public key to get a decoded token
    */
-  verify(token: string, options: VerifyOptions = {}): Promise<Record<string, unknown>> {
-    return new Promise((resolve, reject) => {
-      jwt.verify(token, this.secretOrPrivateKey, options, (err, decoded: any) => {
-        if (decoded) resolve(decoded);
-        else reject(err);
-      });
-    });
+  async verify(token: string): Promise<Record<string, unknown>> {
+    const secret = this.encoder.encode(this.secretOrPrivateKey);
+    const { payload, protectedHeader } = await jose.jwtVerify(token, secret);
+    return payload as Record<string, unknown>;
   }
 
   /**
    * Returns the decoded payload without verifying if the signature is valid.
    */
-  decode(encryptedData: string): null | { [key: string]: any } | string {
-    return jwt.decode(encryptedData);
+  async decode(encryptedData: string): Promise<Record<string, unknown> | null> {
+    const payload = jose.decodeJwt(encryptedData);
+    return payload as Record<string, unknown> | null;
   }
 
   /**
    * Sign the given payload into a JSON Web Token string
    */
-  sign(payload: string | Buffer | Record<string, unknown>): Promise<string> {
-    return new Promise((resolve, reject) => {
-      jwt.sign(payload, this.secretOrPrivateKey, (err, encoded) => {
-        if (encoded) resolve(encoded);
-        else reject(err);
-      });
-    });
+  async sign(payload: Record<string, unknown>): Promise<string> {
+    const secret = this.encoder.encode(this.secretOrPrivateKey);
+    return new jose.SignJWT(payload)
+      .setProtectedHeader({ alg: 'HS256' })
+      .sign(secret);
   }
 }

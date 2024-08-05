@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { decode } from "jsonwebtoken";
-
+import * as jose from 'jose'
 import { inMemoryDatabase } from "./_helpers/in_memory/database.js";
 import {
   inMemoryAccessTokenRepository,
@@ -187,7 +186,7 @@ describe("authorization_server", () => {
 
     const response = await authorizationServer.completeAuthorizationRequest(authorizationRequest);
     const authorizeResponseQuery = new URLSearchParams(response.headers.location.split("?")[1]);
-    const decodedCode: IAuthCodePayload = <IAuthCodePayload>decode(String(authorizeResponseQuery.get("code")));
+    const decodedCode: IAuthCodePayload = <IAuthCodePayload>jose.decodeJwt(String(authorizeResponseQuery.get("code")));
 
     expect(decodedCode.client_id).toBe(client.id);
     expect(decodedCode.redirect_uri).toBe("http://localhost");
@@ -257,7 +256,7 @@ describe("authorization_server", () => {
 
       // assert
       const authorizeResponseQuery = new URLSearchParams(response.headers.location.split("?")[1]);
-      const decodedCode: IAuthCodePayload = <IAuthCodePayload>decode(String(authorizeResponseQuery.get("code")));
+      const decodedCode: IAuthCodePayload = <IAuthCodePayload>jose.decodeJwt(String(authorizeResponseQuery.get("code")));
       expect(decodedCode.client_id).toBe(client.id);
       expect(decodedCode.redirect_uri).toBe("http://localhost");
       expect(decodedCode.code_challenge).toBeUndefined();

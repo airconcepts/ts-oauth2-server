@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { decode } from "jsonwebtoken";
+import * as jose from "jose";
 import { inMemoryDatabase } from "../_helpers/in_memory/database.js";
 import {
   AuthorizationServerOptions,
@@ -21,7 +21,7 @@ import {
 import { DEFAULT_AUTHORIZATION_SERVER_OPTIONS } from "../../../src/options.js";
 
 export function expectTokenResponse(tokenResponse: ResponseInterface) {
-  const decodedToken: any = decode(tokenResponse.body.access_token);
+  const decodedToken: any = jose.decodeJwt(tokenResponse.body.access_token);
 
   expect(tokenResponse.status).toBe(200);
   expect(tokenResponse.headers["cache-control"]).toBe("no-store");

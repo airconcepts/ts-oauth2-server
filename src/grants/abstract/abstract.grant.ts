@@ -257,7 +257,7 @@ export abstract class AbstractGrant implements GrantInterface {
     return request.query?.[param] ?? defaultValue;
   }
 
-  protected encrypt(unencryptedData: string | Buffer | Record<string, unknown>): Promise<string> {
+  protected encrypt(unencryptedData: Record<string, any>): Promise<string> {
     return this.jwt.sign(unencryptedData);
   }
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { decode } from "jsonwebtoken";
+import * as jose from "jose";
 
 import { inMemoryDatabase } from "../_helpers/in_memory/database.js";
 import {
@@ -369,7 +369,7 @@ describe("authorization_code grant", () => {
       authorizationRequest.audience = ["MyDinosaurLife"];
       const response = await grant.completeAuthorizationRequest(authorizationRequest);
       const authorizeResponseQuery = new URLSearchParams(response.headers.location.split("?")[1]);
-      const decodedCode: IAuthCodePayload = <IAuthCodePayload>decode(String(authorizeResponseQuery.get("code")));
+      const decodedCode: IAuthCodePayload = <IAuthCodePayload>jose.decodeJwt(String(authorizeResponseQuery.get("code")));
 
       expect(response.headers.location.includes("http://example.com?code=")).toBeTruthy();
       expect(decodedCode.client_id).toBe(client.id);
@@ -394,7 +394,7 @@ describe("authorization_code grant", () => {
       authorizationRequest.audience = "EvenIfItKillsMe";
       const response = await grant.completeAuthorizationRequest(authorizationRequest);
       const authorizeResponseQuery = new URLSearchParams(response.headers.location.split("?")[1]);
-      const decodedCode: IAuthCodePayload = <IAuthCodePayload>decode(String(authorizeResponseQuery.get("code")));
+      const decodedCode: IAuthCodePayload = <IAuthCodePayload>jose.decodeJwt(String(authorizeResponseQuery.get("code")));
 
       expect(response.headers.location).toMatch(/http\:\/\/example\.com\?this_should_work=true\&code\=/);
       expect(decodedCode.client_id).toBe(client.id);
@@ -412,7 +412,7 @@ describe("authorization_code grant", () => {
       authorizationRequest.user = user;
       const response = await grant.completeAuthorizationRequest(authorizationRequest);
       const authorizeResponseQuery = new URLSearchParams(response.headers.location.split("?")[1]);
-      const decodedCode: IAuthCodePayload = <IAuthCodePayload>decode(String(authorizeResponseQuery.get("code")));
+      const decodedCode: IAuthCodePayload = <IAuthCodePayload>jose.decodeJwt(String(authorizeResponseQuery.get("code")));
 
       expect(response.headers.location.includes("http://example.com?code=")).toBeTruthy();
       expect(decodedCode.client_id).toBe(client.id);
@@ -503,7 +503,7 @@ describe("authorization_code grant", () => {
 
       // assert
       expectTokenResponse(accessTokenResponse);
-      const decodedToken = decode(accessTokenResponse.body.access_token) as any;
+      const decodedToken = jose.decodeJwt(accessTokenResponse.body.access_token) as any;
       expect(decodedToken.email).toBe("jason@example.com");
       expect(decodedToken.iss).toBe("TestIssuer");
       expect(decodedToken.aud).toBe("MotionCitySoundtrack");
