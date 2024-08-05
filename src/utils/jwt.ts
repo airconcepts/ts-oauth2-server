@@ -26,7 +26,7 @@ export class JwtService implements JwtInterface {
    */
   async verify(token: string): Promise<Record<string, unknown>> {
     const secret = this.encoder.encode(this.secretOrPrivateKey);
-    const { payload, protectedHeader } = await jose.jwtVerify(token, secret);
+    const { payload } = await jose.jwtVerify(token, secret);
     return payload as Record<string, unknown>;
   }
 
