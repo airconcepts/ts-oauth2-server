@@ -4,6 +4,8 @@ import { OAuthUser } from "./user.entity.js";
 
 export interface OAuthToken {
   accessToken: string;
+  idTokenFields?: Record<string, any>;
+  idTokenExpiresAt?: Date;
   accessTokenExpiresAt: Date;
   refreshToken?: string | null;
   refreshTokenExpiresAt?: Date | null;

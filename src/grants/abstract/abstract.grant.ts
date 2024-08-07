@@ -40,7 +40,7 @@ export interface ParsedAccessToken extends JwtPayload {
   // Extra JWT fields (assuming they can be of any type)
   [key: string]: unknown;
 }
-export interface ITokenData extends ParsedAccessToken {}
+export interface ITokenData extends ParsedAccessToken { }
 export interface ParsedRefreshToken extends JwtPayload {
   access_token_id: string;
   refresh_token_id: string;
@@ -66,7 +66,7 @@ export abstract class AbstractGrant implements GrantInterface {
     protected readonly scopeRepository: OAuthScopeRepository,
     protected readonly jwt: JwtInterface,
     public readonly options: AuthorizationServerOptions,
-  ) {}
+  ) { }
 
   get scopeDelimiter(): string {
     return this.options.scopeDelimiter;
@@ -88,6 +88,12 @@ export abstract class AbstractGrant implements GrantInterface {
       encryptedRefreshToken = await this.encryptRefreshToken(client, accessToken, scopes);
     }
 
+    let encryptedIdToken: string | undefined = undefined;
+
+    if (accessToken.idTokenFields) {
+        encryptedIdToken = await this.encryptIdToken(accessToken, extraJwtFields)
+    }
+
     const bearerTokenResponse = new BearerTokenResponse(accessToken);
 
     bearerTokenResponse.body = {
@@ -95,6 +101,7 @@ export abstract class AbstractGrant implements GrantInterface {
       expires_in: getSecondsUntil(accessToken.accessTokenExpiresAt),
       access_token: encryptedAccessToken,
       refresh_token: encryptedRefreshToken,
+      id_token: encryptedIdToken,
       scope,
     };
 
@@ -138,6 +145,24 @@ export abstract class AbstractGrant implements GrantInterface {
       nbf: roundToSeconds(now) - this.options.notBeforeLeeway, // @see https://tools.ietf.org/html/rfc7519#section-4.1.5
       iat: roundToSeconds(now), // @see https://tools.ietf.org/html/rfc7519#section-4.1.6
       jti: accessToken.accessToken, // @see https://tools.ietf.org/html/rfc7519#section-4.1.7
+    });
+  }
+
+  protected encryptIdToken(
+    accessToken: OAuthToken,
+    extraJwtFields: ExtraAccessTokenFields,
+  ): Promise<string> {
+    const now = Date.now();
+    return this.encrypt(<ITokenData>{
+      // optional claims which the `jwtService.extraTokenFields()` method may overwrite
+      iss: undefined, // @see https://tools.ietf.org/html/rfc7519#section-4.1.1
+      aud: undefined, // @see https://tools.ietf.org/html/rfc7519#section-4.1.3
+      // standard claims over which this library asserts control
+      sub: accessToken.user?.id, // @see https://tools.ietf.org/html/rfc7519#section-4.1.2
+      exp: roundToSeconds(accessToken.idTokenExpiresAt!.getTime()), // @see https://tools.ietf.org/html/rfc7519#section-4.1.4
+      iat: roundToSeconds(now), // @see https://tools.ietf.org/html/rfc7519#section-4.1.6,
+      ...accessToken.idTokenFields,
+      ...extraJwtFields
     });
   }
 
@@ -354,12 +379,12 @@ export abstract class AbstractGrant implements GrantInterface {
 
     const responseBody: OAuthTokenIntrospectionResponse = active
       ? {
-          active: true,
-          scope: oauthToken.scopes.map(s => s.name).join(this.options.scopeDelimiter),
-          client_id: oauthToken.client.id,
-          token_type: tokenType,
-          ...parsedToken,
-        }
+        active: true,
+        scope: oauthToken.scopes.map(s => s.name).join(this.options.scopeDelimiter),
+        client_id: oauthToken.client.id,
+        token_type: tokenType,
+        ...parsedToken,
+      }
       : { active: false };
 
     const response = new OAuthResponse();
