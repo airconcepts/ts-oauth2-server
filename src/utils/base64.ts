@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer"
 export function base64encode(str: string | Buffer): string {
   if (typeof str === "string") str = Buffer.from(str);
   return str.toString("base64");

@@ -122,7 +122,7 @@ export class AuthCodeGrant extends AbstractAuthorizedGrant {
         verifier = this.codeChallengeVerifiers.S256;
       }
 
-      if (!verifier.verifyCodeChallenge(codeVerifier, validatedPayload.code_challenge)) {
+      if (!await verifier.verifyCodeChallenge(codeVerifier, validatedPayload.code_challenge)) {
         throw OAuthException.invalidGrant("Failed to verify code challenge.");
       }
     }

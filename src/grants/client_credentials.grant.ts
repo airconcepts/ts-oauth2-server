@@ -41,7 +41,7 @@ export class ClientCredentialsGrant extends AbstractGrant {
       throw OAuthException.invalidParameter("token", "Missing `token` parameter in request body");
     }
 
-    const parsedToken: unknown = this.jwt.decode(token);
+    const parsedToken: unknown = await this.jwt.decode(token);
 
     let oauthToken: undefined | OAuthToken = undefined;
     let expiresAt = new Date(0);
