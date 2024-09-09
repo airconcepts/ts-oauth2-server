@@ -1,7 +1,7 @@
 # TypeScript OAuth2.0 Server
 
-[![JSR](https://jsr.io/badges/@jmondi/oauth2-server)](https://jsr.io/@jmondi/oauth2-server)
-[![GitHub package.json version](https://img.shields.io/github/package-json/v/jasonraimondi/ts-oauth2-server?style=flat-square)](https://github.com/jasonraimondi/ts-oauth2-server/releases/latest)
+[![JSR](https://jsr.io/badges/@jmondi/oauth2-server?style=flat-square)](https://jsr.io/@jmondi/oauth2-server)
+[![NPM Version](https://img.shields.io/npm/v/%40jmondi%2Foauth2-server?style=flat-square)](https://www.npmjs.com/package/@jmondi/oauth2-server)
 [![GitHub Workflow Status]( https://img.shields.io/github/actions/workflow/status/jasonraimondi/ts-oauth2-server/build-and-test.yml?branch=main&style=flat-square)](https://github.com/jasonraimondi/ts-oauth2-server)
 [![Test Coverage](https://img.shields.io/codeclimate/coverage/jasonraimondi/typescript-oauth2-server?style=flat-square)](https://codeclimate.com/github/jasonraimondi/typescript-oauth2-server/test_coverage)
 [![NPM Downloads](https://img.shields.io/npm/dt/@jmondi/oauth2-server?label=npm%20downloads&style=flat-square)](https://www.npmjs.com/package/@jmondi/oauth2-server)
@@ -17,6 +17,7 @@ The following RFCs are implemented:
 - [RFC7009 "OAuth 2.0 Token Revocation"](https://tools.ietf.org/html/rfc7009)
 - [RFC7519 "JSON Web Token (JWT)"](https://tools.ietf.org/html/rfc7519)
 - [RFC7636 "Proof Key for Code Exchange by OAuth Public Clients"](https://tools.ietf.org/html/rfc7636)
+- [RFC7662 "OAuth 2.0 Token Introspection"](https://tools.ietf.org/html/rfc7662)
 - [RFC8693 "OAuth 2.0 Token Exchange"](https://datatracker.ietf.org/doc/html/rfc8693)
 
 Out of the box it supports the following grants:
@@ -44,16 +45,19 @@ Example implementations:
 
 | Version         | Latest Version | Security Updates |
 |-----------------|----------------|------------------|
+| [4.x][version4] | :tada:         | :tada:           |
 | [3.x][version3] | :tada:         | :tada:           |
 | [2.x][version2] |                | :tada:           |
 
-[version3]: https://github.com/jasonraimondi/ts-oauth2-server/tree/main
+[version4]: https://github.com/jasonraimondi/ts-oauth2-server/tree/main
+[version3]: https://github.com/jasonraimondi/ts-oauth2-server/tree/3.x
 [version2]: https://github.com/jasonraimondi/ts-oauth2-server/tree/2.x
 
 ## Migration Guide
 
 - [v1 to v2](https://github.com/jasonraimondi/ts-oauth2-server/releases/tag/v2.0.0)
-- [v2 to v3](https://tsoauth2server.com/migration/v2_to_v3.html) 
+- [v2 to v3](https://tsoauth2server.com/docs/upgrade_guide#to-v3) 
+- [v3 to v4](https://tsoauth2server.com/docs/upgrade_guide#to-v4) 
 
 ## Thanks
 

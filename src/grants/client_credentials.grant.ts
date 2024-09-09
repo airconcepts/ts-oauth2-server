@@ -30,55 +30,83 @@ export class ClientCredentialsGrant extends AbstractGrant {
   }
 
   async respondToIntrospectRequest(req: RequestInterface): Promise<ResponseInterface> {
-    // introspection is authenticated via client_credentials, but we don't want to require this param in the request
-    req.body["grant_type"] = "client_credentials";
-    await this.validateClient(req);
+    req.body["grant_type"] = this.identifier;
 
-    const token = req.body?.["token"];
-    const tokenTypeHint = req.body?.["token_type_hint"];
+    if (this.options.authenticateIntrospect) await this.validateClient(req);
+
+    const { parsedToken, oauthToken, expiresAt, tokenType } = await this.tokenFromRequest(req);
+
+    const active = expiresAt > new Date();
+
+    let body: OAuthTokenIntrospectionResponse = { active: false };
+
+    if (active && oauthToken) {
+      body = {
+        active: true,
+        scope: oauthToken.scopes.map(s => s.name).join(this.options.scopeDelimiter),
+        client_id: oauthToken.client.id,
+        token_type: tokenType,
+        ...(typeof parsedToken === "object" ? parsedToken : {}),
+      };
+    }
+
+    return new OAuthResponse({ body });
+  }
+
+  canRespondToRevokeRequest(request: RequestInterface): boolean {
+    return this.getRequestParameter("token_type_hint", request) !== "auth_code";
+  }
+
+  async respondToRevokeRequest(req: RequestInterface): Promise<ResponseInterface> {
+    req.body["grant_type"] = this.identifier;
+
+    if (this.options.authenticateRevoke) await this.validateClient(req);
+
+    let { oauthToken } = await this.tokenFromRequest(req);
+
+    // Invalid tokens do not cause an error response since the client cannot handle such an error.
+    // @see https://datatracker.ietf.org/doc/html/rfc7009#section-2.2
+    if (oauthToken) await this.tokenRepository.revoke(oauthToken).catch();
+
+    return new OAuthResponse();
+  }
+
+  private readonly revokeTokenTypeHintRegExp = /^(access_token|refresh_token|auth_code)$/;
+
+  private async tokenFromRequest(req: RequestInterface) {
+    const token = this.getRequestParameter("token", req);
 
     if (!token) {
       throw OAuthException.invalidParameter("token", "Missing `token` parameter in request body");
     }
 
-    const parsedToken: unknown = await this.jwt.decode(token);
+    const tokenTypeHint = this.getRequestParameter("token_type_hint", req);
+
+    if (typeof tokenTypeHint === "string" && !this.revokeTokenTypeHintRegExp.test(tokenTypeHint)) {
+      throw OAuthException.unsupportedTokenType();
+    }
+
+    const parsedToken: unknown = this.jwt.decode(token);
 
     let oauthToken: undefined | OAuthToken = undefined;
     let expiresAt = new Date(0);
-    let tokenType: string = "access_token";
+    let tokenType: "access_token" | "refresh_token" = "access_token";
 
     if (tokenTypeHint === "refresh_token" && this.isRefreshTokenPayload(parsedToken)) {
-      oauthToken = await this.tokenRepository.getByRefreshToken(parsedToken.refresh_token_id);
-      expiresAt = oauthToken.refreshTokenExpiresAt ?? expiresAt;
+      oauthToken = await this.tokenRepository.getByRefreshToken(parsedToken.refresh_token_id).catch();
+      expiresAt = oauthToken?.refreshTokenExpiresAt ?? expiresAt;
       tokenType = "refresh_token";
     } else if (this.isAccessTokenPayload(parsedToken)) {
       if (typeof this.tokenRepository.getByAccessToken !== "function") {
-        throw OAuthException.internalServerError("Token introspection for access tokens is not supported");
+        throw OAuthException.internalServerError("TokenRepository#getByAccessToken is not implemented");
       }
-      oauthToken = await this.tokenRepository.getByAccessToken(parsedToken.jti!);
-      if (!oauthToken) {
-        throw OAuthException.badRequest("Token not found");
-      }
-      expiresAt = oauthToken.accessTokenExpiresAt ?? expiresAt;
-    } else {
-      throw OAuthException.invalidParameter("token", "Invalid token provided");
+
+      // if token not found, ignore and return undefined oauthToken
+      oauthToken = await this.tokenRepository.getByAccessToken(parsedToken.jti).catch();
+      expiresAt = oauthToken?.accessTokenExpiresAt ?? expiresAt;
     }
 
-    const active = expiresAt > new Date();
-
-    const responseBody: OAuthTokenIntrospectionResponse = active
-      ? {
-          active: true,
-          scope: oauthToken.scopes.map(s => s.name).join(this.options.scopeDelimiter),
-          client_id: oauthToken.client.id,
-          token_type: tokenType,
-          ...parsedToken,
-        }
-      : { active: false };
-
-    const response = new OAuthResponse();
-    response.body = responseBody;
-    return response;
+    return { parsedToken, oauthToken, expiresAt, tokenType };
   }
 
   private isAccessTokenPayload(token: unknown): token is ParsedAccessToken {

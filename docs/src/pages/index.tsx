@@ -96,6 +96,10 @@ function Features() {
       title: `RFC7636 "Proof Key for Code Exchange by OAuth Public Clients"`,
     },
     {
+      to: "https://tools.ietf.org/html/rfc7662",
+      title: `RFC7662 "OAuth 2.0 Token Introspection"`,
+    },
+    {
       to: "https://datatracker.ietf.org/doc/html/rfc8693",
       title: `RFC8693 "OAuth 2.0 Token Exchange"`,
     },
@@ -196,11 +200,11 @@ export default function Home() {
       <div className="pt-14 px-3 flex flex-col justify-center align-middle text-center">
         <SectionTitle>Contributors</SectionTitle>
         <div className="flex justify-center">
-          <Contributors owner="jasonraimondi" repo="ts-oauth2-server" />
+          {typeof window !== 'undefined' && <Contributors owner="jasonraimondi" repo="ts-oauth2-server" />}
         </div>
         <SectionTitle>Sponsors</SectionTitle>
         <div className="flex justify-center">
-          <Sponsors username="jasonraimondi" />
+          {typeof window !== 'undefined' && <Sponsors username="jasonraimondi" />}
         </div>
       </div>
       <Features />

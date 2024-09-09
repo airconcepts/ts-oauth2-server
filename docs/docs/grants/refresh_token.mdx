@@ -9,11 +9,9 @@ import TabItem from "@theme/TabItem";
 
 Access tokens eventually expire. The refresh token grant enables the client to obtain a new access_token from an existing refresh_token.
 
-:::note Enable this grant
+:::tip
 
-```ts
-authorizationServer.enableGrantType("refresh_token");
-```
+The `refresh_token` grant is enabled by default
 
 :::
 
@@ -65,7 +63,7 @@ The authorization server will respond with the following response
 - **token_type** will always be `Bearer`
 - **expires_in** is the time the token will live in seconds
 - **access_token** is a JWT signed token and is used to authenticate into the resource server
-- **refresh_token** is a JWT signed token and can be used in with the [refresh grant](#refresh-token-grant)
+- **refresh_token** is a JWT signed token and can be used in with the refresh grant (this one)
 - **scope** is a space delimited list of scopes the token has access to
 
 <details>
@@ -95,7 +93,7 @@ Refresh tokens are only valid for a single use. In addition, they can be explici
 A refresh token revocation request will include the following parameters:
 
 - **token** is the signed token previously issued to the client
-- **token_type_hint** (optional) should be set to `refresh_token`
+- **token_type_hint** MUST be set to `refresh_token`
 
 <details>
 <summary>View sample revoke refresh_token request</summary>
