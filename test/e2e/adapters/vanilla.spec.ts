@@ -67,6 +67,11 @@ describe("adapters/vanilla.js", () => {
           "x-custom-header": "custom-value",
         }),
         body: JSON.stringify({ key: "value" }),
+        json: () =>
+          Promise.resolve({
+            key: "value",
+          }),
+        formData: () => Promise.resolve(new FormData()),
       } as unknown as Request;
     });
 
@@ -90,6 +95,8 @@ describe("adapters/vanilla.js", () => {
           "x-custom-header": "custom-value",
         }),
         body: null,
+        json: () => Promise.resolve({}),
+        formData: () => Promise.resolve(new FormData()),
       } as unknown as Request;
 
       const result = await requestFromVanilla(mockRequest);

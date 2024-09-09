@@ -498,13 +498,13 @@ describe("authorization_server", () => {
           scopes: [],
         };
         inMemoryDatabase.tokens[accessToken.accessToken] = accessToken;
-
+        console.log('accessToken', accessToken);
         request.body = {
           token: refreshTokenJWT,
           token_type_hint: "refresh_token",
         };
         const response = await authorizationServer.introspect(request);
-
+        console.log('response',response.body);
         expect(response.body.access_token_id).toBe(
           "d71e27d7b1ca473d315bbc95534888a8074957b5cb82d9a77d386689b54970626eb377e2bc0f9ddc",
         );
@@ -538,10 +538,10 @@ describe("authorization_server", () => {
 
     const accessTokenJWT =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imphc29uQHJhaW1vbmRpLnVzIiwiY2xpZW50IjoiU3ZlbHRlIEtpdCIsImNpZCI6IjE2YzExODEyLTg5ZGEtNGQ2OC05ZTljLTc3MTUzMjNlMzRmNSIsInNjb3BlIjoiIiwic3ViIjoiMDE5MGVmZTctNzUwMy03ZGQyLTg1MTYtNjM3NWZkNWRlODhiIiwiZXhwIjoxNzIyNTY5NDQ2LCJuYmYiOjE3MjI1NjU4NDYsImlhdCI6MTcyMjU2NTg0NiwianRpIjoiZDcxZTI3ZDdiMWNhNDczZDMxNWJiYzk1NTM0ODg4YTgwNzQ5NTdiNWNiODJkOWE3N2QzODY2ODliNTQ5NzA2MjZlYjM3N2UyYmMwZjlkZGMifQ.HsHqJOjCFt6KiT6H1y13QbMxUljqkFaFVT0WPxrO25Q";
-    const parsedAccessToken = jwt.decode(accessTokenJWT) as ParsedAccessToken;
+    const parsedAccessToken = jose.decodeJwt(accessTokenJWT) as ParsedAccessToken;
     const refreshTokenJWT =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfaWQiOiIxNmMxMTgxMi04OWRhLTRkNjgtOWU5Yy03NzE1MzIzZTM0ZjUiLCJhY2Nlc3NfdG9rZW5faWQiOiJkNzFlMjdkN2IxY2E0NzNkMzE1YmJjOTU1MzQ4ODhhODA3NDk1N2I1Y2I4MmQ5YTc3ZDM4NjY4OWI1NDk3MDYyNmViMzc3ZTJiYzBmOWRkYyIsInJlZnJlc2hfdG9rZW5faWQiOiI5NzQxMDZlNjBiZDk0YTU5MzE0YzMxMzY5ZDlhZDg0ZWYwNTU3MGFiZmQ3N2JmYWI0YmUxMGYzMmY5MDQxZDBlMmRmMzE2YmY2MTM5ZjJiOCIsInNjb3BlIjoiIiwidXNlcl9pZCI6IjAxOTBlZmU3LTc1MDMtN2RkMi04NTE2LTYzNzVmZDVkZTg4YiIsImV4cGlyZV90aW1lIjoxNzIyNTczMDQ3LCJpYXQiOjE3MjI1NjU4NDZ9.vpPKS9grMO5gIUQJI2ss525bwxNez9Xo0Rv6Y10DSqY";
-    const parsedRefreshToken = jwt.decode(refreshTokenJWT) as ParsedRefreshToken;
+    const parsedRefreshToken = jose.decodeJwt(refreshTokenJWT) as ParsedRefreshToken;
 
     beforeEach(() => {
       inMemoryDatabase.clients[client.id] = client;

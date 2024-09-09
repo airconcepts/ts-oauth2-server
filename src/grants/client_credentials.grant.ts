@@ -86,7 +86,7 @@ export class ClientCredentialsGrant extends AbstractGrant {
       throw OAuthException.unsupportedTokenType();
     }
 
-    const parsedToken: unknown = this.jwt.decode(token);
+    const parsedToken: unknown = await this.jwt.decode(token);
 
     let oauthToken: undefined | OAuthToken = undefined;
     let expiresAt = new Date(0);

@@ -322,7 +322,7 @@ export class AuthCodeGrant extends AbstractAuthorizedGrant {
       throw OAuthException.invalidParameter("token", "Missing `token` parameter in request body");
     }
 
-    const parsedCode: unknown = this.jwt.decode(token);
+    const parsedCode: unknown = await this.jwt.decode(token);
 
     if (!this.isAuthCodePayload(parsedCode)) {
       throw OAuthException.invalidParameter("token", "Token does not contain valid auth code payload");
