@@ -42,8 +42,12 @@ export async function requestFromVanilla(req: Request): Promise<OAuthRequest> {
   });
 
   let body: Record<string, unknown> = {};
-
-  if (isReadableStream(req.body)) {
+  const contentType = req.headers.get("content-type");
+  if (contentType === "application/json") {
+    body = (await req.json()) as Record<string, unknown>;
+  } else if (contentType === "application/x-www-form-urlencoded" || contentType === "multipart/form-data") {
+    body = Object.fromEntries((await req.formData()).entries());
+  } else if (isReadableStream(req.body)) {
     body = JSON.parse(await streamToString(req.body));
   } else if (req.body != null) {
     body = JSON.parse(req.body);
